@@ -3,38 +3,14 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { CardProductDetail } from '../categorias/productos/CardProductDetail';
 import { Loading } from '../load/Loading';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';  // <--- esta línea
 import './CardCategory.css';
 
-export const CardCategory = () => {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
+export const CardCategory = ({ categories, loading, error }) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const categoryFromURL = searchParams.get('cat');
+  const categoryFromURL = searchParams.get("cat");
   const [selectedCategoryId, setSelectedCategoryId] = useState(categoryFromURL);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const colRef = collection(db, 'categorias');
-        const snapshot = await getDocs(colRef);
-        const cats = snapshot.docs.map(doc => ({
-          id: doc.id,
-          nombre: doc.data().nombre || 'Sin nombre',
-          image: doc.data().imagen || 'https://via.placeholder.com/150',
-        }));
-        setCategories(cats);
-      } catch (err) {
-        setError('Error al cargar categorías');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
 
   const handleSelectCategory = (id) => {
     setSelectedCategoryId(id);
@@ -52,7 +28,9 @@ export const CardCategory = () => {
   if (selectedCategoryId) {
     return (
       <div>
-        <button onClick={handleBackToCategories}><i className="bx bxs-left-arrow-circle bx-md"></i></button>
+        <button onClick={handleBackToCategories}>
+          <i className="bx bxs-left-arrow-circle bx-md"></i>
+        </button>
         <CardProductDetail categoryId={selectedCategoryId} />
       </div>
     );
@@ -65,13 +43,23 @@ export const CardCategory = () => {
           key={id}
           className="card-category"
           onClick={() => handleSelectCategory(id)}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSelectCategory(id); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSelectCategory(id);
+          }}
           aria-label={`Ver productos de ${nombre}`}
         >
-          <img src={image} alt={nombre} className="card-category-image" />
+          <img
+            src={image}
+            alt={nombre}
+            className="card-category-image"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://placehold.co/150x150";
+            }}
+          />
           <h3 className="card-category-title">{nombre}</h3>
         </div>
       ))}

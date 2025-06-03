@@ -1,15 +1,67 @@
-/* src/components/categorias/AddCategory.css */
-.add-category-form {
-  background: #fff;
+/* Estilos para el modal centrado y superpuesto */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5); /* Fondo oscuro translúcido */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Por encima de todo */
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem 2.5rem;
   border-radius: 8px;
-  padding: 20px;
+  position: relative;
   max-width: 400px;
-  margin: 20px auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.3s;
+}
+
+.modal-close-btn:hover {
+  color: #333;
+}
+
+/* Estilos del formulario dentro del modal */
+.add-category-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center; /* Esto centra horizontalmente */
+  gap: 1rem; /* Espaciado entre elementos */
 }
+
+.upload-btn {
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 6px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  transition: background-color 0.3s;
+}
+
+.upload-btn:hover {
+  background-color: #45a049;
+}
+
 
 .add-category-form h2 {
   margin-bottom: 10px;
@@ -19,10 +71,11 @@
 .add-category-form input[type="text"],
 .add-category-form input[type="file"] {
   padding: 10px;
-  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 
-.add-category-form button {
+.add-category-form button[type="submit"] {
   padding: 10px;
   background-color: #28a745;
   color: white;
@@ -30,18 +83,25 @@
   border: none;
   cursor: pointer;
   border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.add-category-form button[type="submit"]:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.add-category-form button[type="submit"]:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
 }
 
 .add-category-form .error {
   color: red;
   font-weight: bold;
-}
-
-.add-category-form .success {
-  color: green;
-  font-weight: bold;
+  text-align: center;
 }
 
 .add-category-form .info {
   color: #333;
+  text-align: center;
 }

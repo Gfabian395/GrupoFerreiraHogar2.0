@@ -1,0 +1,167 @@
+/* Upload.css */
+
+:root {
+  --bg: #e3e4e8;
+  --fg: #17181c;
+  font-size: 14px;
+}
+
+.upload-btn {
+  --pathA: polygon(12px 0px, 24px 7px, 17px 7px, 17px 14px, 24px 14px, 24px 16px, 12px 16px, 12px 16px, 12px 16px, 0px 16px, 0px 14px, 7px 14px, 7px 7px, 0px 7px);
+  --pathB: polygon(12px 0px, 15.6px 4px, 15.6px 7px, 15.6px 10px, 18px 12.8px, 18px 16px, 14.4px 16px, 12px 16px, 9.6px 16px, 6px 16px, 6px 12.8px, 8.4px 10px, 8.4px 7px, 8.4px 4px);
+  --pathC: polygon(12px 0px, 15.6px 4px, 15.6px 7px, 15.6px 10px, 18px 12.8px, 18px 16px, 14.4px 16px, 12px 24px, 9.6px 16px, 6px 16px, 6px 12.8px, 8.4px 10px, 8.4px 7px, 8.4px 4px);
+  background: #255ff4;
+  border-radius: 16px;
+  color: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 6px 12px 6px 24px;
+  position: relative;
+  transition: all 0.1s linear;
+  width: 120px;
+  -webkit-tap-highlight-color: #0000;
+  -webkit-appearance: none;
+  appearance: none;
+  font-size: 12px;
+}
+
+.upload-btn:disabled {
+  cursor: not-allowed;
+}
+
+.upload-btn:not(:disabled):focus,
+.upload-btn:not(:disabled):hover {
+  background: #0b46da;
+}
+
+.upload-btn:focus {
+  outline: transparent;
+}
+
+.upload-btn:before,
+.upload-btn:after {
+  content: "";
+  display: block;
+  position: absolute;
+}
+
+.upload-btn:before {
+  background:
+    radial-gradient(3.2px 3.2px at 19px 6.4px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 9.6px 12.8px, #fff 45%, #fff0 50%),
+    radial-gradient(3.2px 3.2px at 6.4px 22.4px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 16px 20.8px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 9.6px 32px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 19px 30.4px, #fff 45%, #fff0 50%),
+    radial-gradient(3.2px 3.2px at 14.4px 36.8px, #fff 45%, #fff0 50%),
+    radial-gradient(3.2px 3.2px at 6.4px 43.2px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 19px 49.6px, #fff 45%, #fff0 50%),
+    radial-gradient(3.2px 3.2px at 9.6px 52.8px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 16px 59.2px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 6.4px 64px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 19px 75.2px, #fff 45%, #fff0 50%),
+    radial-gradient(3.2px 3.2px at 12.8px 70.4px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 4.8px 76.8px, #fff 45%, #fff0 50%),
+    radial-gradient(3.2px 3.2px at 19px 86.4px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 9.6px 92.8px, #fff 45%, #fff0 50%),
+    radial-gradient(3.2px 3.2px at 6.4px 102.4px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 16px 100.8px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 9.6px 112px, #fff 45%, #fff0 50%),
+    radial-gradient(1.6px 1.6px at 19px 110.4px, #fff 45%, #fff0 50%),
+    radial-gradient(3.2px 3.2px at 14.4px 116.8px, #fff 45%, #fff0 50%);
+  background-repeat: no-repeat;
+  bottom: 0;
+  left: 16px;
+  width: 24px;
+  height: 160px;
+}
+
+.upload-btn:after {
+  background: linear-gradient(#fff 67%, #f4b925 67%);
+  clip-path: var(--pathA);
+  top: 12px;
+  left: 16px;
+  width: 24px;
+  height: 24px;
+}
+
+.upload-btn--running:before,
+.upload-btn--done:before {
+  animation: riseOnce 0.5s 0.3s linear, riseLoop 1s 0.8s linear infinite;
+}
+
+.upload-btn--running:after,
+.upload-btn--done:after {
+  clip-path: var(--pathC);
+}
+
+.upload-btn--running:after {
+  animation: flyStart 1.3s ease-in-out, fly 2s 1.3s ease-in-out infinite;
+}
+
+.upload-btn--done:before {
+  animation: riseLoop 1s 0.8s linear infinite paused;
+}
+
+.upload-btn--done:after {
+  animation: flyEnd 0.8s linear forwards;
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17181c;
+    --fg: #e3e4e8;
+  }
+}
+
+/* Animation */
+@keyframes riseOnce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(40px);
+  }
+}
+@keyframes riseLoop {
+  from {
+    transform: translateY(40px);
+  }
+  to {
+    transform: translateY(120px);
+  }
+}
+@keyframes flyStart {
+  from {
+    clip-path: var(--pathA);
+    transform: translateY(0);
+  }
+  17% {
+    clip-path: var(--pathB);
+    transform: translateY(0);
+  }
+  33% {
+    clip-path: var(--pathC);
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-8px);
+  }
+}
+@keyframes fly {
+  from, to {
+    transform: translateY(-8px);
+  }
+  50% {
+    transform: translateY(4.8px);
+  }
+}
+@keyframes flyEnd {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-80px);
+  }
+}
