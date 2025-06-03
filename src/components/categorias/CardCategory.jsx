@@ -1,16 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
-import { CardProductDetail } from '../categorias/productos/CardProductDetail';
-import { Loading } from '../load/Loading';
-import { useSearchParams } from 'react-router-dom';  // <--- esta línea
-import './CardCategory.css';
+import React, { useState } from "react";
+import { CardProductDetail } from "../categorias/productos/CardProductDetail";
+import { Loading } from "../load/Loading";
+import { useSearchParams } from "react-router-dom";
+import "./CardCategory.css";
 
-
-export const CardCategory = ({ categories, loading, error }) => {
+export const CardCategory = ({ categories, loading, error, editMode, deleteMode, onSelectCategory, onSelectCategoryForDelete }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryFromURL = searchParams.get("cat");
   const [selectedCategoryId, setSelectedCategoryId] = useState(categoryFromURL);
+  const [selectedEditCategory, setSelectedEditCategory] = useState(null);
+  const [selectedDeleteCategory, setSelectedDeleteCategory] = useState(null);
 
   const handleSelectCategory = (id) => {
     setSelectedCategoryId(id);
@@ -20,6 +19,19 @@ export const CardCategory = ({ categories, loading, error }) => {
   const handleBackToCategories = () => {
     setSelectedCategoryId(null);
     setSearchParams({});
+  };
+
+  const handleCheckboxChange = (id) => {
+    if (editMode) {
+      setSelectedEditCategory(id === selectedEditCategory ? null : id);
+      onSelectCategory(id === selectedEditCategory ? null : id);
+      setSelectedDeleteCategory(null); // Desactiva la selección en deleteMode
+    }
+    if (deleteMode) {
+      setSelectedDeleteCategory(id === selectedDeleteCategory ? null : id);
+      onSelectCategoryForDelete(id === selectedDeleteCategory ? null : id);
+      setSelectedEditCategory(null); // Desactiva la selección en editMode
+    }
   };
 
   if (loading) return <Loading />;
@@ -39,28 +51,24 @@ export const CardCategory = ({ categories, loading, error }) => {
   return (
     <div className="categories-container">
       {categories.map(({ id, nombre, image }) => (
-        <div
-          key={id}
-          className="card-category"
-          onClick={() => handleSelectCategory(id)}
-          style={{ cursor: "pointer" }}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleSelectCategory(id);
-          }}
-          aria-label={`Ver productos de ${nombre}`}
-        >
-          <img
-            src={image}
-            alt={nombre}
-            className="card-category-image"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "https://placehold.co/150x150";
-            }}
-          />
-          <h3 className="card-category-title">{nombre}</h3>
+        <div key={id} className="card-category">
+          {(editMode || deleteMode) && (
+            <input
+              type="checkbox"
+              checked={selectedEditCategory === id || selectedDeleteCategory === id}
+              onChange={() => handleCheckboxChange(id)}
+            />
+          )}
+          <div
+            onClick={() => !editMode && !deleteMode && handleSelectCategory(id)}
+            style={{ cursor: editMode || deleteMode ? "default" : "pointer" }}
+            role="button"
+            tabIndex={0}
+            aria-label={`Ver productos de ${nombre}`}
+          >
+            <img src={image} alt={nombre} className="card-category-image" />
+            <h3 className="card-category-title">{nombre}</h3>
+          </div>
         </div>
       ))}
     </div>
