@@ -1,0 +1,13 @@
+/* src/components/CardProductDetail.css */
+
+.products-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+@media (max-width: 600px) {
+  .products-container {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+}
