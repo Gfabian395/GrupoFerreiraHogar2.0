@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CardProductDetail } from "../categorias/productos/CardProductDetail";
+import { CardProductDetail } from "./productos/CardProductDetail";
 import { Loading } from "../load/Loading";
 import { useSearchParams } from "react-router-dom";
 import "./CardCategory.css";
@@ -40,7 +40,7 @@ export const CardCategory = ({ categories, loading, error, editMode, deleteMode,
   if (selectedCategoryId) {
     return (
       <div>
-        <button onClick={handleBackToCategories}>
+        <button onClick={handleBackToCategories} className="back">
           <i className="bx bxs-left-arrow-circle bx-md"></i>
         </button>
         <CardProductDetail categoryId={selectedCategoryId} />

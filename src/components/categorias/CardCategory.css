@@ -45,6 +45,10 @@
   text-transform: capitalize;
 }
 
+.back{
+  background: transparent;
+}
+
 /* Para que sea responsivo, adapta al ancho de su contenedor */
 @media (max-width: 900px) {
   .categories-container {
