@@ -1,99 +1,93 @@
-import { useState } from 'react';
-import { collection, addDoc } from "firebase/firestore";
-import { db, storage } from '../../firebaseConfig';
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import './AddCategory.css';
-import {Upload} from '../../components/botones/Upload';
+import React, { useState, useEffect } from 'react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../firebaseConfig';
+import './AddCategory.css'
 
-export const AddCategory = ({ onClose, onCategoryAdded }) => {
+export const AddCategory = ({ categoriaEditando, onGuardar, onCancelar }) => {
   const [nombre, setNombre] = useState('');
-  const [imagen, setImagen] = useState(null);
-  const [subiendo, setSubiendo] = useState(false);
-  const [error, setError] = useState('');
+  const [imagenFile, setImagenFile] = useState(null);
+  const [imagenUrl, setImagenUrl] = useState('');
 
-  const handleFileChange = (e) => {
-    setImagen(e.target.files[0]);
+  useEffect(() => {
+    if (categoriaEditando) {
+      setNombre(categoriaEditando.nombre || '');
+      setImagenUrl(categoriaEditando.imagenUrl || '');
+    } else {
+      setNombre('');
+      setImagenFile(null);
+      setImagenUrl('');
+    }
+  }, [categoriaEditando]);
+
+  const handleImagenChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagenFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagenUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleSubmit = async () => {
-    setError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    if (!nombre.trim()) {
-      setError('El nombre es obligatorio');
-      return;
-    }
+    let url = imagenUrl;
 
-    if (!imagen) {
-      setError('Debe seleccionar una imagen');
-      return;
-    }
-
-    setSubiendo(true);
-
-    try {
-      const nombreArchivo = `${imagen.name}-${Date.now()}`;
-      const storageRef = ref(storage, `categorias/${nombreArchivo}`);
-      const snapshot = await uploadBytes(storageRef, imagen);
-      const urlDescarga = await getDownloadURL(snapshot.ref);
-
-      await addDoc(collection(db, "categorias"), {
-        nombre: nombre.trim(),
-        imagenUrl: urlDescarga,
-        creadoEn: new Date()
-      });
-
-      setNombre('');
-      setImagen(null);
-
-      if (onCategoryAdded) {
-        onCategoryAdded();
+    if (imagenFile && imagenFile instanceof File) {
+      try {
+        const storageRef = ref(storage, `categorias/${imagenFile.name}_${Date.now()}`);
+        await uploadBytes(storageRef, imagenFile);
+        url = await getDownloadURL(storageRef);
+      } catch (error) {
+        console.error('Error subiendo imagen:', error);
+        alert('Error subiendo imagen');
+        return;
       }
-
-      setTimeout(() => {
-        if (onClose) {
-          onClose();
-        }
-      }, 2500);
-    } catch (err) {
-      setError('Error al subir categoría: ' + err.message);
-    } finally {
-      setSubiendo(false);
     }
+
+    onGuardar({
+      id: categoriaEditando ? categoriaEditando.id : null,
+      nombre: nombre.trim(),
+      imagenUrl: url,
+    });
   };
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content">
-        <form className="add-category-form">
-          <button 
-            type="button" 
-            className="modal-close-btn" 
-            onClick={onClose}
-            aria-label="Cerrar modal"
-          >
-            ×
-          </button>
-          <h2>Agregar Categoría</h2>
+      <div className="modal-container">
+        <h3>{categoriaEditando ? 'Editar Categoría' : 'Nueva Categoría'}</h3>
+        <form onSubmit={handleSubmit} className="form-category">
+          <div className="form-group">
+            <label>Nombre de la categoría:</label>
+            <input
+              type="text"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
+              placeholder="Ej: Electrónica"
+              autoFocus
+              className="input-text"
+            />
+          </div>
 
-          <input
-            type="text"
-            placeholder="Nombre de la categoría"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            disabled={subiendo}
-          />
+          <div className="form-group" style={{ marginTop: '10px' }}>
+            <label>Imagen:</label>
+            <input type="file" accept="image/*" onChange={handleImagenChange} className="input-file" />
+          </div>
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            disabled={subiendo}
-          />
+          {imagenUrl && (
+            <div className="image-preview">
+              <img src={imagenUrl} alt="Preview" className="preview-img" />
+            </div>
+          )}
 
-          {/* Reemplazo del botón por el componente animado */}
-          <Upload onUpload={handleSubmit} />
-
-          {error && <p className="error">{error}</p>}
+          <div className="form-buttons">
+            <button type="submit" className="btn btn-primary">Guardar</button>
+            <button type="button" onClick={onCancelar} className="btn btn-secondary">Cancelar</button>
+          </div>
         </form>
       </div>
     </div>
