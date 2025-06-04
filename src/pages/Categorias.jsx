@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { Abanico } from "../components/abanico/Abanico";
 import { CardCategory } from "../components/categorias/CardCategory";
@@ -60,25 +60,42 @@ export const Categorias = () => {
 
   const handleEliminarCategoria = async () => {
     if (!selectedCategoryForDelete) return;
-
     try {
       await deleteDoc(doc(db, "categorias", selectedCategoryForDelete));
       fetchCategories();
       setSelectedCategoryForDelete(null);
-      setTimeout(() => setDeleteMode(false), 500); // Ahora los checkboxes desaparecen después de la acción
     } catch (error) {
-      console.error("Error al eliminar la categoría:", error);
-    }
-  };
-
-  const handleCategorySelectedForDelete = (categoryId) => {
-    if (deleteMode) {
-      setSelectedCategoryForDelete(categoryId);
+      console.error("Error al eliminar categoría:", error);
     }
   };
 
   return (
-    <>
+    <div className="categorias-container">
+      <Abanico
+        onAgregar={handleAgregar}
+        onEditar={handleEditar}
+        onEliminarModo={handleEliminarModo}
+      />
+
+      {mostrarAddCategory && (
+        <AddCategory
+          onClose={() => {
+            setMostrarAddCategory(false);
+            fetchCategories();
+          }}
+        />
+      )}
+
+      {editMode && selectedCategoryForEdit && (
+        <EditCategory
+          category={selectedCategoryForEdit}
+          onClose={() => {
+            setSelectedCategoryForEdit(null);
+            fetchCategories();
+          }}
+        />
+      )}
+
       <CardCategory
         categories={categories}
         loading={loadingCategories}
@@ -86,32 +103,14 @@ export const Categorias = () => {
         editMode={editMode}
         deleteMode={deleteMode}
         onSelectCategory={setSelectedCategoryForEdit}
-        onSelectCategoryForDelete={handleCategorySelectedForDelete}
+        onSelectCategoryForDelete={setSelectedCategoryForDelete}
       />
 
-      {mostrarAddCategory && (
-        <AddCategory
-          onClose={() => setMostrarAddCategory(false)}
-          onCategoryAdded={fetchCategories}
-        />
-      )}
-
-      {selectedCategoryForEdit && (
-        <EditCategory
-          category={categories.find((cat) => cat.id === selectedCategoryForEdit)}
-          onClose={() => {
-            setSelectedCategoryForEdit(null);
-            setTimeout(() => setEditMode(false), 500); // Los checkboxes se ocultan después de editar
-          }}
-          onCategoryUpdated={fetchCategories}
-        />
-      )}
-
       {deleteMode && selectedCategoryForDelete && (
-        <button onClick={handleEliminarCategoria}>Eliminar Categoría Seleccionada</button>
+        <div className="confirmar-eliminacion">
+          <button onClick={handleEliminarCategoria}>Confirmar eliminación</button>
+        </div>
       )}
-
-      <Abanico onAgregar={handleAgregar} onEditar={handleEditar} onEliminarModo={handleEliminarModo} />
-    </>
+    </div>
   );
 };

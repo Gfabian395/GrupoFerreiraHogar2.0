@@ -1,10 +1,18 @@
 import React, { useState } from "react";
-import { CardProductDetail } from "./productos/CardProductDetail";
+import { CardProductDetail } from "../productos/CardProductDetail";
 import { Loading } from "../load/Loading";
 import { useSearchParams } from "react-router-dom";
 import "./CardCategory.css";
 
-export const CardCategory = ({ categories, loading, error, editMode, deleteMode, onSelectCategory, onSelectCategoryForDelete }) => {
+export const CardCategory = ({
+  categories,
+  loading,
+  error,
+  editMode,
+  deleteMode,
+  onSelectCategory,
+  onSelectCategoryForDelete,
+}) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryFromURL = searchParams.get("cat");
   const [selectedCategoryId, setSelectedCategoryId] = useState(categoryFromURL);
@@ -12,32 +20,53 @@ export const CardCategory = ({ categories, loading, error, editMode, deleteMode,
   const [selectedDeleteCategory, setSelectedDeleteCategory] = useState(null);
 
   const handleSelectCategory = (id) => {
+    console.log("Seleccionar categoría:", id);
     setSelectedCategoryId(id);
     setSearchParams({ cat: id });
   };
 
   const handleBackToCategories = () => {
+    console.log("Volver a listado de categorías");
     setSelectedCategoryId(null);
     setSearchParams({});
   };
 
   const handleCheckboxChange = (id) => {
+    console.log("Checkbox cambio para id:", id);
+
     if (editMode) {
-      setSelectedEditCategory(id === selectedEditCategory ? null : id);
-      onSelectCategory(id === selectedEditCategory ? null : id);
-      setSelectedDeleteCategory(null); // Desactiva la selección en deleteMode
+      const newSelected = id === selectedEditCategory ? null : id;
+      console.log("Modo editar - selección edit:", newSelected);
+      setSelectedEditCategory(newSelected);
+      if (onSelectCategory) {
+        console.log("Llamando onSelectCategory con:", newSelected);
+        onSelectCategory(newSelected);
+      }
+      setSelectedDeleteCategory(null);
     }
     if (deleteMode) {
-      setSelectedDeleteCategory(id === selectedDeleteCategory ? null : id);
-      onSelectCategoryForDelete(id === selectedDeleteCategory ? null : id);
-      setSelectedEditCategory(null); // Desactiva la selección en editMode
+      const newSelected = id === selectedDeleteCategory ? null : id;
+      console.log("Modo borrar - selección delete:", newSelected);
+      setSelectedDeleteCategory(newSelected);
+      if (onSelectCategoryForDelete) {
+        console.log("Llamando onSelectCategoryForDelete con:", newSelected);
+        onSelectCategoryForDelete(newSelected);
+      }
+      setSelectedEditCategory(null);
     }
   };
 
-  if (loading) return <Loading />;
-  if (error) return <p>{error}</p>;
+  if (loading) {
+    console.log("Mostrando Loading...");
+    return <Loading />;
+  }
+  if (error) {
+    console.log("Error:", error);
+    return <p>{error}</p>;
+  }
 
   if (selectedCategoryId) {
+    console.log("Mostrando detalles de la categoría:", selectedCategoryId);
     return (
       <div>
         <button onClick={handleBackToCategories} className="back">
@@ -60,7 +89,14 @@ export const CardCategory = ({ categories, loading, error, editMode, deleteMode,
             />
           )}
           <div
-            onClick={() => !editMode && !deleteMode && handleSelectCategory(id)}
+            onClick={() => {
+              if (!editMode && !deleteMode) {
+                console.log("Click para seleccionar categoría:", id);
+                handleSelectCategory(id);
+              } else {
+                console.log("Click ignorado por modo editar o borrar");
+              }
+            }}
             style={{ cursor: editMode || deleteMode ? "default" : "pointer" }}
             role="button"
             tabIndex={0}
