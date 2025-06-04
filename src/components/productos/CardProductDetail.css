@@ -2,8 +2,8 @@
 
 .products-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
+/*   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+ */}
 
 @media (max-width: 600px) {
   .products-container {

@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { collection, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../firebaseConfig';
 
-export const AddProductForm = ({ categoryId, onAdded }) => {
+export const AddProductForm = ({
+  categoryId,
+  productoEditando = null,
+  onAdded,
+  onUpdated
+}) => {
   const [nombre, setNombre] = useState('');
   const [modelo, setModelo] = useState('');
   const [precio, setPrecio] = useState('');
@@ -14,6 +19,30 @@ export const AddProductForm = ({ categoryId, onAdded }) => {
   const [imagenFile, setImagenFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Cuando cambia productoEditando, precarga datos
+  useEffect(() => {
+    if (productoEditando) {
+      setNombre(productoEditando.nombre || '');
+      setModelo(productoEditando.modelo || '');
+      setPrecio(productoEditando.precio || '');
+      setStock1(productoEditando.stock1 || '');
+      setStock2(productoEditando.stock2 || '');
+      setColor((productoEditando.color || []).join(', '));
+      setDescripcion(productoEditando.descripcion || '');
+      setImagenFile(null);
+    } else {
+      // resetear formulario si no hay producto a editar
+      setNombre('');
+      setModelo('');
+      setPrecio('');
+      setStock1('');
+      setStock2('');
+      setColor('');
+      setDescripcion('');
+      setImagenFile(null);
+    }
+  }, [productoEditando]);
 
   const handleImageChange = (e) => {
     if (e.target.files[0]) {
@@ -27,120 +56,119 @@ export const AddProductForm = ({ categoryId, onAdded }) => {
     setError(null);
 
     try {
-      let imagenUrl = '';
+      let imagenUrl = productoEditando ? productoEditando.imagen : null;
 
       if (imagenFile) {
-        const storageRef = ref(storage, `categorias/${categoryId}/${imagenFile.name}-${Date.now()}`);
-        const snapshot = await uploadBytes(storageRef, imagenFile);
-        imagenUrl = await getDownloadURL(snapshot.ref);
+        const storageRef = ref(storage, `images/${imagenFile.name}-${Date.now()}`);
+        await uploadBytes(storageRef, imagenFile);
+        imagenUrl = await getDownloadURL(storageRef);
       }
 
-      const colorsArray = color
-        .split(',')
-        .map(c => c.trim())
-        .filter(c => c.length > 0);
-
-      const productosRef = collection(db, 'categorias', categoryId, 'productos');
-      await addDoc(productosRef, {
+      const productoData = {
         nombre,
         modelo,
         precio: Number(precio),
         stock1: Number(stock1),
         stock2: Number(stock2),
-        color: colorsArray,
+        color: color.split(',').map(c => c.trim()),
         descripcion,
         imagen: imagenUrl,
-        creadoEn: serverTimestamp()
-      });
+        fecha: serverTimestamp(),
+      };
 
-      // Reset form
-      setNombre('');
-      setModelo('');
-      setPrecio('');
-      setStock1('');
-      setStock2('');
-      setColor('');
-      setDescripcion('');
-      setImagenFile(null);
-
-      if (onAdded) onAdded();
-
+      if (productoEditando) {
+        // Editar producto existente
+        const docRef = doc(db, 'categorias', categoryId, 'productos', productoEditando.id);
+        await updateDoc(docRef, productoData);
+        onUpdated && onUpdated();
+      } else {
+        // Agregar nuevo producto
+        const colRef = collection(db, 'categorias', categoryId, 'productos');
+        await addDoc(colRef, productoData);
+        onAdded && onAdded();
+      }
     } catch (err) {
       console.error(err);
-      setError('Error al subir el producto');
+      setError('Error al guardar producto');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="add-product-form">
-      <h3>Agregar producto a la categoría</h3>
+    <form className="add-product-form" onSubmit={handleSubmit}>
+      <h3>{productoEditando ? 'Editar Producto' : 'Agregar Producto'}</h3>
 
+      <label>Nombre:</label>
       <input
         type="text"
-        placeholder="Nombre"
         value={nombre}
-        onChange={e => setNombre(e.target.value)}
+        onChange={(e) => setNombre(e.target.value)}
         required
       />
 
+      <label>Modelo:</label>
       <input
         type="text"
-        placeholder="Modelo"
         value={modelo}
-        onChange={e => setModelo(e.target.value)}
+        onChange={(e) => setModelo(e.target.value)}
         required
       />
 
+      <label>Precio:</label>
       <input
         type="number"
-        placeholder="Precio"
+        min="0"
+        step="0.01"
         value={precio}
-        onChange={e => setPrecio(e.target.value)}
+        onChange={(e) => setPrecio(e.target.value)}
         required
       />
 
+      <label>Stock Los Andes 4320:</label>
       <input
         type="number"
-        placeholder="Stock Los Andes 4320"
+        min="0"
         value={stock1}
-        onChange={e => setStock1(e.target.value)}
+        onChange={(e) => setStock1(e.target.value)}
         required
       />
 
+      <label>Stock Los Andes 4034:</label>
       <input
         type="number"
-        placeholder="Stock Los Andes 4034"
+        min="0"
         value={stock2}
-        onChange={e => setStock2(e.target.value)}
+        onChange={(e) => setStock2(e.target.value)}
         required
       />
 
+      <label>Colores (separados por coma):</label>
       <input
         type="text"
-        placeholder="Colores (separados por coma)"
         value={color}
-        onChange={e => setColor(e.target.value)}
+        onChange={(e) => setColor(e.target.value)}
       />
 
+      <label>Descripción:</label>
       <textarea
-        placeholder="Descripción"
         value={descripcion}
-        onChange={e => setDescripcion(e.target.value)}
+        onChange={(e) => setDescripcion(e.target.value)}
+        rows="3"
       />
 
+      <label>Imagen:</label>
       <input
         type="file"
         accept="image/*"
         onChange={handleImageChange}
       />
 
-      <button type="submit" disabled={loading}>
-        {loading ? 'Subiendo...' : 'Agregar Producto'}
-      </button>
+      {error && <p className="error">{error}</p>}
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <button type="submit" disabled={loading}>
+        {loading ? 'Guardando...' : productoEditando ? 'Actualizar' : 'Agregar'}
+      </button>
     </form>
   );
 };

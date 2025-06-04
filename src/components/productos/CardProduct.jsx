@@ -3,6 +3,7 @@ import './CardProduct.css';
 import { AddToCart } from '../botones/AddToCart';
 
 export const CardProduct = ({
+  id,
   title,
   modelo,
   price,
@@ -10,7 +11,11 @@ export const CardProduct = ({
   descripcion,
   colors = [],
   stock1,
-  stock2
+  stock2,
+  modoEdicion = false,
+  modoEliminar = false,
+  onEditar,
+  onEliminar
 }) => {
   const priceFormatted = `$${Math.round(price)}`;
   const [isModalOpen, setModalOpen] = useState(false);
@@ -60,6 +65,21 @@ export const CardProduct = ({
         </div>
 
         <AddToCart />
+
+        {(modoEdicion || modoEliminar) && (
+          <div className="product-actions">
+            {modoEdicion && (
+              <button className="btn-editar" onClick={onEditar}>
+                Editar
+              </button>
+            )}
+            {modoEliminar && (
+              <button className="btn-eliminar" onClick={onEliminar}>
+                Eliminar
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {isModalOpen && (
@@ -69,27 +89,5 @@ export const CardProduct = ({
         </div>
       )}
     </>
-  );
-};
-
-export const ProductList = ({ productos }) => {
-  console.log('Productos recibidos:', productos);
-
-  return (
-    <div className="product-list">
-      {productos.map((producto) => (
-        <CardProduct
-          key={producto.id}
-          title={producto.title || producto.modelo || 'Sin título'}
-          modelo={producto.modelo || 'N/A'}
-          price={producto.precio || 0}
-          image={producto.imagen || ''}
-          descripcion={producto.descripcion || ''}
-          colors={producto.color || []}
-          stock1={producto.stock1 || 0}
-          stock2={producto.stock2 || 0}
-        />
-      ))}
-    </div>
   );
 };
