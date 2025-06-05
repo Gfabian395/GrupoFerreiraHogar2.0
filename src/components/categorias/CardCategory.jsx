@@ -28,18 +28,7 @@ export const CardCategory = ({
         }
       }}
     >
-      {(modoEdicion || modoEliminar) && (
-        <input
-          type="checkbox"
-          checked={seleccionado}
-          onChange={(e) => {
-            e.stopPropagation();
-            onCheckboxChange && onCheckboxChange(categoria.id);
-          }}
-          className="card-checkbox"
-        />
-      )}
-
+      
       {categoria.imagenUrl && (
         <img src={categoria.imagenUrl} alt={categoria.nombre} className="card-category-image" />
       )}

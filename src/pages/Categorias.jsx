@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { ref, deleteObject } from 'firebase/storage';
+import { db, storage } from '../firebaseConfig';
 import { Abanico } from '../components/abanico/Abanico';
 import { CardCategory } from '../components/categorias/CardCategory';
 import { AddCategory } from '../components/categorias/AddCategory';
 import { CardProductDetail } from '../components/productos/CardProductDetail';
+import { Loading } from '../components/load/Loading';
 
 export const Categorias = () => {
   const [categorias, setCategorias] = useState([]);
@@ -61,19 +63,37 @@ export const Categorias = () => {
     }
   };
 
-  // Eliminar categoría
+  // Eliminar categoría y su imagen en Firebase Storage
   const eliminarCategoria = async (id) => {
     if (window.confirm('¿Estás seguro de eliminar esta categoría?')) {
       try {
-        await deleteDoc(doc(db, 'categorias', id));
+        // Obtener datos de la categoría antes de eliminarla
+        const categoriaRef = doc(db, 'categorias', id);
+        const categoriaSnapshot = await getDoc(categoriaRef);
+
+        if (categoriaSnapshot.exists()) {
+          const categoriaData = categoriaSnapshot.data();
+
+          // Si tiene imagen, eliminarla de Firebase Storage
+          if (categoriaData.imagenUrl) {
+            const imageRef = ref(storage, categoriaData.imagenUrl);
+            await deleteObject(imageRef);
+          }
+        }
+
+        // Eliminar la categoría de Firestore
+        await deleteDoc(categoriaRef);
+
+        // Recargar lista de categorías después de eliminación
         cargarCategorias();
+        
       } catch (error) {
-        console.error('Error eliminando categoría:', error);
+        console.error('Error eliminando categoría e imagen:', error);
       }
     }
   };
 
-  // Manejadores abanico
+  // Manejadores de abanico
   const handleAgregar = () => {
     setCategoriaEditando(null);
     setShowForm(true);
@@ -95,7 +115,7 @@ export const Categorias = () => {
     setCategoriaEditando(null);
   };
 
-  // Cuando clickean editar en una CardCategory
+  // Editar categoría en el formulario
   const onEditarCategoria = (categoria) => {
     setCategoriaEditando(categoria);
     setShowForm(true);
@@ -120,9 +140,7 @@ export const Categorias = () => {
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: 'auto', padding: '20px' }}>
-      <h2>Categorías</h2>
-
+    <div>
       {!categoriaSeleccionada && (
         <>
           <Abanico
@@ -139,35 +157,44 @@ export const Categorias = () => {
             />
           )}
 
-          {loading && <p>Cargando categorías...</p>}
+          {loading && <Loading />}
 
           {categorias.length === 0 && !loading && (
             <p>No hay categorías disponibles.</p>
           )}
 
-          {categorias.map((cat) => (
-            <CardCategory
-              key={cat.id}
-              categoria={cat}
-              modoEdicion={modoEdicion}
-              modoEliminar={modoEliminar}
-              onEditar={onEditarCategoria}
-              onEliminar={eliminarCategoria}
-              onSeleccionarCategoria={handleSeleccionarCategoria}
-            />
-          ))}
+          {/* Contenedor FLEX exclusivo para categorías */}
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '20px',
+            justifyContent: 'center',
+            width: '100%',
+            maxWidth: '1200px',
+          }}>
+            {categorias.map((cat) => (
+              <CardCategory
+                key={cat.id}
+                categoria={cat}
+                modoEdicion={modoEdicion}
+                modoEliminar={modoEliminar}
+                onEditar={onEditarCategoria}
+                onEliminar={eliminarCategoria}
+                onSeleccionarCategoria={handleSeleccionarCategoria}
+              />
+            ))}
+          </div>
         </>
       )}
 
       {categoriaSeleccionada && (
         <>
-          <button
-            onClick={handleVolverListado}
-            className="back"
+          <button 
+            onClick={handleVolverListado} 
             style={{
               background: 'transparent',
               border: 'none',
-              fontSize: '1.2rem',
+              fontSize: '1.5rem',
               cursor: 'pointer',
               marginBottom: '15px',
             }}
@@ -175,7 +202,17 @@ export const Categorias = () => {
             ←
           </button>
 
-          <CardProductDetail categoryId={categoriaSeleccionada} />
+          {/* Contenedor exclusivo para los productos */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '15px',
+            width: '100%',
+            padding: '10px',
+            justifyItems: 'center',
+          }}>
+            <CardProductDetail categoryId={categoriaSeleccionada} />
+          </div>
         </>
       )}
     </div>

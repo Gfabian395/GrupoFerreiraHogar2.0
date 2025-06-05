@@ -17,7 +17,7 @@ export const CardProduct = ({
   onEditar,
   onEliminar
 }) => {
-  const priceFormatted = `$${Math.round(price)}`;
+ const priceFormatted = `$${price.toLocaleString('es-AR')}`;
   const [isModalOpen, setModalOpen] = useState(false);
 
   return (

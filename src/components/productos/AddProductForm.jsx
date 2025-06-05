@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../firebaseConfig';
+import './AddProductForm.css'
 
 export const AddProductForm = ({
   categoryId,
@@ -97,7 +98,7 @@ export const AddProductForm = ({
 
   return (
     <form className="add-product-form" onSubmit={handleSubmit}>
-      <h3>{productoEditando ? 'Editar Producto' : 'Agregar Producto'}</h3>
+      {/* <h3>{productoEditando ? 'Editar Producto' : 'Agregar Producto'}</h3> */}
 
       <label>Nombre:</label>
       <input

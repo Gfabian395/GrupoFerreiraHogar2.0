@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
+import { collection, getDocs, doc, deleteDoc, getDoc } from 'firebase/firestore';
+import { ref, deleteObject } from 'firebase/storage';
+import { db, storage } from '../../firebaseConfig';
 import { CardProduct } from './CardProduct';
 import { Loading } from '../load/Loading';
 import { P404 } from '../404/P404';
@@ -45,54 +46,28 @@ export const CardProductDetail = ({ categoryId }) => {
     }
   }, [categoryId]);
 
-  // Funciones para el Abanico
-  const handleAgregarClick = () => {
-    setShowForm(true);
-    setModoEdicion(false);
-    setModoEliminar(false);
-    setProductoEditando(null);
-  };
-
-  const handleEditarClick = () => {
-    setModoEdicion(true);
-    setModoEliminar(false);
-    setShowForm(false);
-    setProductoEditando(null);
-  };
-
-  const handleEliminarModoClick = () => {
-    const password = prompt("Ingresa la contraseña para eliminar:");
-    if (password === "asd") {
-      setModoEliminar(true);
-      setModoEdicion(false);
-      setShowForm(false);
-      setProductoEditando(null);
-    } else {
-      alert("Contraseña incorrecta. No se activó modo eliminar.");
-    }
-  };
-
-  const handleEditarProducto = (producto) => {
-    setProductoEditando(producto);
-    setShowForm(true);
-  };
-
   const handleEliminarProducto = async (productoId) => {
     if (!window.confirm("¿Seguro que querés eliminar este producto?")) return;
+
     try {
-      await deleteDoc(doc(db, 'categorias', categoryId, 'productos', productoId));
+      const productoRef = doc(db, 'categorias', categoryId, 'productos', productoId);
+      const productoSnapshot = await getDoc(productoRef);
+
+      if (productoSnapshot.exists()) {
+        const productoData = productoSnapshot.data();
+
+        if (productoData.imagen) {
+          const imageRef = ref(storage, productoData.imagen);
+          await deleteObject(imageRef);
+        }
+      }
+
+      await deleteDoc(productoRef);
       fetchProducts();
     } catch (error) {
-      alert("Error eliminando producto");
+      alert("Error eliminando producto e imagen");
       console.error(error);
     }
-  };
-
-  const handleFormAddedOrUpdated = () => {
-    fetchProducts();
-    setShowForm(false);
-    setProductoEditando(null);
-    setModoEdicion(false);
   };
 
   if (loading) return <Loading />;
@@ -101,17 +76,17 @@ export const CardProductDetail = ({ categoryId }) => {
   return (
     <div className="products-container">
       <Abanico
-        onAgregar={handleAgregarClick}
-        onEditar={handleEditarClick}
-        onEliminarModo={handleEliminarModoClick}
+        onAgregar={() => setShowForm(true)}
+        onEditar={() => setModoEdicion(true)}
+        onEliminarModo={() => setModoEliminar(true)}
       />
 
       {showForm && (
         <AddProductForm
           categoryId={categoryId}
           productoEditando={productoEditando}
-          onAdded={handleFormAddedOrUpdated}
-          onUpdated={handleFormAddedOrUpdated}
+          onAdded={fetchProducts}
+          onUpdated={fetchProducts}
         />
       )}
 
@@ -130,7 +105,7 @@ export const CardProductDetail = ({ categoryId }) => {
             descripcion={prod.descripcion}
             modoEdicion={modoEdicion}
             modoEliminar={modoEliminar}
-            onEditar={() => handleEditarProducto(prod)}
+            onEditar={() => setProductoEditando(prod)}
             onEliminar={() => handleEliminarProducto(prod.id)}
           />
         ))

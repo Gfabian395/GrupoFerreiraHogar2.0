@@ -2,8 +2,11 @@
 
 .products-container {
   display: grid;
-/*   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
- */}
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+
+justify-content: center;
+}
 
 @media (max-width: 600px) {
   .products-container {
