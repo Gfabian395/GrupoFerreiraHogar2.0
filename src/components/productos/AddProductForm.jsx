@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, } from 'firebase/storage';
 import { db, storage } from '../../firebaseConfig';
-import './AddProductForm.css'
+import './AddProductForm.css';
 
-export const AddProductForm = ({
-  categoryId,
-  productoEditando = null,
-  onAdded,
-  onUpdated
-}) => {
+export const AddProductForm = ({ categoryId, productoEditando = null, onAdded, onUpdated, }) => {
   const [nombre, setNombre] = useState('');
   const [modelo, setModelo] = useState('');
   const [precio, setPrecio] = useState('');
@@ -18,10 +13,10 @@ export const AddProductForm = ({
   const [color, setColor] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [imagenFile, setImagenFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Cuando cambia productoEditando, precarga datos
   useEffect(() => {
     if (productoEditando) {
       setNombre(productoEditando.nombre || '');
@@ -32,8 +27,8 @@ export const AddProductForm = ({
       setColor((productoEditando.color || []).join(', '));
       setDescripcion(productoEditando.descripcion || '');
       setImagenFile(null);
+      setPreviewUrl(productoEditando.imagen || null);
     } else {
-      // resetear formulario si no hay producto a editar
       setNombre('');
       setModelo('');
       setPrecio('');
@@ -42,12 +37,17 @@ export const AddProductForm = ({
       setColor('');
       setDescripcion('');
       setImagenFile(null);
+      setPreviewUrl(null);
     }
   }, [productoEditando]);
 
   const handleImageChange = (e) => {
-    if (e.target.files[0]) {
-      setImagenFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setImagenFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewUrl(reader.result);
+      reader.readAsDataURL(file);
     }
   };
 
@@ -78,12 +78,10 @@ export const AddProductForm = ({
       };
 
       if (productoEditando) {
-        // Editar producto existente
         const docRef = doc(db, 'categorias', categoryId, 'productos', productoEditando.id);
         await updateDoc(docRef, productoData);
         onUpdated && onUpdated();
       } else {
-        // Agregar nuevo producto
         const colRef = collection(db, 'categorias', categoryId, 'productos');
         await addDoc(colRef, productoData);
         onAdded && onAdded();
@@ -98,8 +96,6 @@ export const AddProductForm = ({
 
   return (
     <form className="add-product-form" onSubmit={handleSubmit}>
-      {/* <h3>{productoEditando ? 'Editar Producto' : 'Agregar Producto'}</h3> */}
-
       <label>Nombre:</label>
       <input
         type="text"
@@ -164,6 +160,14 @@ export const AddProductForm = ({
         accept="image/*"
         onChange={handleImageChange}
       />
+
+      {previewUrl && (
+        <img
+          src={previewUrl}
+          alt="Vista previa"
+          className="image-preview"
+        />
+      )}
 
       {error && <p className="error">{error}</p>}
 

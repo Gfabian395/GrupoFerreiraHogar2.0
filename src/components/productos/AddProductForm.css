@@ -5,7 +5,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(255, 255, 255, 0.3); /* Fondo blanco translúcido */
+  background: rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(20px);
   display: flex;
   justify-content: center;
@@ -15,22 +15,20 @@
 
 /* Contenedor del formulario flotante */
 .add-product-form {
+  background: white;
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
-}
-
-/* Título */
-.add-product-form h3 {
-  margin-bottom: 1rem;
-  text-align: center;
-  font-size: 1.5rem;
+  max-width: 500px;
+  width: 100%;
 }
 
 /* Etiquetas */
 .add-product-form label {
   font-weight: bold;
+  display: block;
+  margin-top: 1rem;
 }
 
 /* Inputs y textarea */
@@ -44,6 +42,7 @@
   background: rgba(255, 255, 255, 0.9);
   font-size: 16px;
   width: 100%;
+  margin-top: 0.5rem;
 }
 
 /* Textarea específico */
@@ -51,11 +50,22 @@
   resize: none;
 }
 
+/* Vista previa de imagen */
+.image-preview {
+  margin-top: 1rem;
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  object-fit: contain;
+  display: block;
+}
+
 /* Error */
 .error {
   color: red;
   font-weight: bold;
   text-align: center;
+  margin-top: 1rem;
 }
 
 /* Botón */
@@ -68,16 +78,17 @@
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s;
+  width: 100%;
+  margin-top: 1.5rem;
 }
 
 .add-product-form button:hover {
   background-color: #0056b3;
 }
 
-/* Responsivo */
+/* Responsive */
 @media screen and (max-width: 600px) {
   .add-product-form {
-    width: 95%;
     padding: 1.5rem;
   }
 
